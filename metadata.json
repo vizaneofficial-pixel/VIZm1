@@ -1,0 +1,6 @@
+{
+  "name": "Luxury Technical Fashion",
+  "description": "A luxury technical apparel e-commerce brand experience combining avant-garde techwear presentation with an intelligent AI styling assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Bebas Neue", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Base custom styles to create depth and texture */
+@layer base {
+  body {
+    background-color: #090909;
+    color: #ffffff;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}
+
+/* Custom scrollbar and ambient animation classes */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090909;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f1f1f;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #df7b34;
+}
+
+/* Ambient glow and blur backgrounds */
+.bg-vignette {
+  background: radial-gradient(circle at center, rgba(17, 17, 17, 0.4) 0%, rgba(9, 9, 9, 0.95) 100%);
+}
+
+.concrete-noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: "";
+  opacity: 0.018;
+  pointer-events: none;
+  z-index: 100;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Smooth motion classes */
+.ease-out-cubic {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Moving particles inside backdrop */
+@keyframes floatParticle {
+  0% { transform: translateY(100vh) translateX(0) scale(1); opacity: 0; }
+  50% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) translateX(50px) scale(0.5); opacity: 0; }
+}
+
+.particle {
+  position: absolute;
+  background-color: #df7b34;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: floatParticle 10s linear infinite;
+  z-index: 1;
+}
+
+/* Volumetric slow breathing animation */
+@keyframes breatheLight {
+  0%, 100% { opacity: 0.25; transform: scale(1); filter: blur(120px); }
+  50% { opacity: 0.4; transform: scale(1.15); filter: blur(140px); }
+}
+
+.volumetric-light {
+  animation: breatheLight 8s ease-in-out infinite;
+}
+
+@keyframes scanner {
+  0% { transform: translateY(0%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.scan-line {
+  animation: scanner 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
