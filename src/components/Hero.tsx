@@ -245,7 +245,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
   const [heroVideoLoaded, setHeroVideoLoaded] = useState(false);
 
   // High-fidelity timeline sequence states
-  const [animationStage, setAnimationStage] = useState<'hidden' | 'introducing' | 'overshoot' | 'settling' | 'idle'>('idle');
+  const [animationStage, setAnimationStage] = useState<'hidden' | 'introducing' | 'overshoot' | 'settling' | 'idle'>('hidden');
   const [mouseDistance, setMouseDistance] = useState<number>(9999);
   const [approachOffset, setApproachOffset] = useState({ x: 0, y: 0 });
   const [isDirectHover, setIsDirectHover] = useState(false);
@@ -273,6 +273,32 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
     { id: 7, x: -80, y: 50, size: 7, delay: 0.15, duration: 2.2, color: "#df7b34" },
     { id: 8, x: 60, y: -70, size: 4, delay: 0.5, duration: 1.5, color: "#8c8275" },
   ];
+
+  // Set up precise multi-phase campaign load keyframes sequence
+  useEffect(() => {
+    const hiddenTimer = setTimeout(() => {
+      setAnimationStage('introducing');
+    }, 300);
+
+    const overshootTimer = setTimeout(() => {
+      setAnimationStage('overshoot');
+    }, 2100); // 300ms + 1800ms reveal
+
+    const settlingTimer = setTimeout(() => {
+      setAnimationStage('settling');
+    }, 2250); // 150ms hold
+
+    const idleTimer = setTimeout(() => {
+      setAnimationStage('idle');
+    }, 2400); // Transitions completely into luxury idle floating
+
+    return () => {
+      clearTimeout(hiddenTimer);
+      clearTimeout(overshootTimer);
+      clearTimeout(settlingTimer);
+      clearTimeout(idleTimer);
+    };
+  }, []);
 
   // Compute fluid non-snapping mouse approach & magnetic vectors using high-performance rAF optimization
   useEffect(() => {
@@ -401,11 +427,53 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
         style={{ y: translateY }}
         className="w-full flex flex-col items-center relative z-10"
       >
-        {/* Wrapper 2: Instant Load & Idle Layer */}
+        {/* Wrapper 2: Entrance and Settling Sequence Layer */}
         <motion.div
-          initial="idle"
-          animate="idle"
+          initial="hidden"
+          animate={
+            animationStage === 'hidden' 
+              ? "hidden" 
+              : animationStage === 'introducing' 
+              ? "entering" 
+              : animationStage === 'overshoot' 
+              ? "overshoot" 
+              : animationStage === 'settling' 
+              ? "settling" 
+              : "idle"
+          }
           variants={{
+            hidden: {
+              opacity: 0,
+              scale: 0.75,
+              y: 120,
+              x: 80,
+              rotateZ: -8,
+              rotateY: 18,
+              filter: "blur(18px)",
+            },
+            entering: {
+              opacity: 1,
+              scale: 1.02, // overshoot target
+              y: 0,
+              x: 0,
+              rotateZ: -5,
+              rotateY: 0,
+              filter: "blur(0px)",
+            },
+            overshoot: {
+              scale: 1.02,
+              y: 0,
+              x: 0,
+              rotateZ: -5,
+              rotateY: 0,
+            },
+            settling: {
+              scale: 1.00,
+              y: 0,
+              x: 0,
+              rotateZ: -5,
+              rotateY: 0,
+            },
             idle: {
               opacity: 1,
               scale: 1.00,
@@ -417,7 +485,11 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             }
           }}
           transition={{
-            duration: 0
+            hidden: { duration: 0 },
+            entering: { duration: 1.8, ease: [0.16, 1, 0.3, 1] },
+            overshoot: { duration: 0.15, ease: "easeOut" },
+            settling: { duration: 0.15, ease: "easeOut" },
+            idle: { duration: 0.3, ease: "easeInOut" }
           }}
           className="w-full flex flex-col items-center"
         >
@@ -430,16 +502,18 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             style={{
               transformStyle: "preserve-3d",
               transform: `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) rotateZ(-5deg) scale(${activeScale}) translateZ(${translateZ})`,
-              transition: "transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 900ms cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: animationStage === 'idle' 
+                ? "transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 900ms cubic-bezier(0.16, 1, 0.3, 1)" 
+                : "none",
               willChange: "transform",
             }}
             onClick={handleProductClick}
           >
             {/* Background Volumetric Particle Depth-Planes (Ember / Ash behind item) */}
             <div 
-              className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-[1000ms] ease-out"
+              className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-[2000ms] ease-out"
               style={{
-                opacity: 0.85
+                opacity: (animationStage === 'introducing' || animationStage === 'overshoot' || animationStage === 'settling') ? 1 : 0
               }}
             >
               {backgroundParticles.map((p) => (
@@ -518,34 +592,15 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
                   }}
                 />
                 
-                <motion.img
+                <img
                   src={processedUrl}
                   alt={heroProduct.name}
                   referrerPolicy="no-referrer"
-                  className="w-full h-auto object-contain select-none pointer-events-none max-h-[78vh]"
-                  initial={{ 
-                    scale: 0.75, 
-                    rotate: -12, 
-                    y: 100, 
-                    opacity: 0, 
-                    filter: "blur(12px) drop-shadow(0 0px 0px rgba(0,0,0,0))"
-                  }}
-                  animate={{ 
-                    scale: 1, 
-                    rotate: 0, 
-                    y: 0, 
-                    opacity: 1, 
-                    filter: `blur(0px) drop-shadow(0 25px 50px rgba(0,0,0,${isDirectHover ? 0.95 : 0.85})) drop-shadow(0 0 ${isDirectHover ? 35 : 28}px rgba(223,123,52,${isDirectHover ? 0.8 : 0.45}))`
-                  }}
-                  transition={{ 
-                    type: "spring",
-                    stiffness: 75,
-                    damping: 14,
-                    mass: 1.15,
-                    restDelta: 0.001
-                  }}
+                  className="w-full h-auto object-contain select-none pointer-events-none transition-all duration-500 max-h-[78vh]"
                   style={{
-                    transformOrigin: "center center",
+                    filter: animationStage === 'hidden' 
+                      ? "none" 
+                      : `drop-shadow(0 25px 50px rgba(0,0,0,${isDirectHover ? 0.95 : 0.85})) drop-shadow(0 0 ${isDirectHover ? 35 : 28}px rgba(223,123,52,${isDirectHover ? 0.8 : 0.45}))`,
                   }}
                 />
               </div>
@@ -553,9 +608,9 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
 
             {/* Foreground Volumetric Particle Depth-Planes (Ember / Ash in front of item) */}
             <div 
-              className="absolute inset-0 pointer-events-none z-[20] transition-opacity duration-[1000ms] ease-out"
+              className="absolute inset-0 pointer-events-none z-[20] transition-opacity duration-[2000ms] ease-out"
               style={{
-                opacity: 0.85
+                opacity: (animationStage === 'introducing' || animationStage === 'overshoot' || animationStage === 'settling') ? 1 : 0
               }}
             >
               {foregroundParticles.map((p) => (
@@ -709,12 +764,22 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           
           <div className="relative">
             <h1 className="font-heading text-6xl sm:text-8xl md:text-9xl tracking-[0.02em] leading-[0.85] text-white uppercase font-black">
-              <span className="block">
+              <motion.span 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                className="block"
+              >
                 COLLECTION
-              </span>
-              <span className="block text-white">
+              </motion.span>
+              <motion.span 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="block text-white"
+              >
                 VOLCANO DROP<span className="text-xs font-sans align-top relative top-5 ml-1 select-none text-[#df7b34]">™</span>
-              </span>
+              </motion.span>
             </h1>
           </div>
 
@@ -761,7 +826,12 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             ================ BOTTOM LEFT ACQUIRE ACTION ================
             Circular thin-line wireframe layout with dynamic arrow and pricing tags.
           */}
-          <div className="flex items-center gap-10 mt-2">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="flex items-center gap-10 mt-2"
+          >
             <button
                id="hero-add-to-cart-circular"
               onClick={handleAcquire}
@@ -792,7 +862,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
                 </span>
               </div>
             </button>
-          </div>
+          </motion.div>
 
         </div>
 
