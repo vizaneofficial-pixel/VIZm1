@@ -187,6 +187,7 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [stylistOpen, setStylistOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
+  const [backgroundVideoLoaded, setBackgroundVideoLoaded] = useState(false);
 
   // Fetch true catalog directly from Express and load
   useEffect(() => {
@@ -287,13 +288,32 @@ export default function App() {
       {/* ================ SHARED FIXED VOLCANIC LANDSCAPE CINEMATIC BACKGROUND ================ */}
       <div className="fixed inset-0 overflow-hidden z-0 pointer-events-none select-none bg-black">
         
+        {/* Ambient Pulsing Volcano placeholder - fast loading on initial mount using low-quality image placeholder */}
+        <div 
+          className={`absolute inset-0 z-[1] transition-opacity duration-1000 ease-out pointer-events-none bg-black ${
+            backgroundVideoLoaded ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          {/* Extremely fast-loading, low resolution volcanic image (<5KB) */}
+          <img
+            src="https://images.unsplash.com/photo-1619266465172-02a857c3556d?auto=format&fit=crop&w=150&q=20&blur=8"
+            alt="Lava background placeholder"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.1] blur-[10px]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#1b0a02]/90 via-[#050505]/80 to-black z-[2]" />
+        </div>
+
         {/* Layer 1: Blurred Animated Background Video */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover scale-108 filter blur-[4px] brightness-[0.80] contrast-[0.90] saturate-[0.80] opacity-[0.60] select-none pointer-events-none"
+          onLoadedData={() => setBackgroundVideoLoaded(true)}
+          className={`w-full h-full object-cover scale-108 filter blur-[4px] brightness-[0.80] contrast-[0.90] saturate-[0.80] select-none pointer-events-none transition-opacity duration-1000 ease-out ${
+            backgroundVideoLoaded ? "opacity-[0.60]" : "opacity-0"
+          }`}
         >
           <source src="https://labs.google/fx/api/og-video/shared/85258e17-122d-42aa-a45b-a3c7c9710abe" type="video/mp4" />
           <source src="https://assets.mixkit.co/videos/preview/mixkit-lava-eruption-from-a-volcano-in-chile-43306-large.mp4" type="video/mp4" />
@@ -426,6 +446,14 @@ export default function App() {
 
       {/* Ash AI Floating Chatbot */}
       <AshChatbot cart={cart} />
+
+      {/* Sleek industrial float watermark signature matching volcanic aesthetics */}
+      <div className="fixed bottom-10 right-24 z-30 pointer-events-none select-none hidden sm:flex items-center gap-2">
+        <span className="h-[1.2px] w-6 bg-gradient-to-r from-transparent to-[#df7b34]/40" />
+        <span className="font-mono text-[9px] text-[#777777] uppercase tracking-[0.3em]">
+          MADE BY <span className="text-white font-medium">VIZ</span>
+        </span>
+      </div>
 
       {/* Slide-out intelligent style styling portal */}
       <AIStylist

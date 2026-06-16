@@ -233,6 +233,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
   const [activeSlide, setActiveSlide] = useState(0);
   const [addConfirmed, setAddConfirmed] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [heroVideoLoaded, setHeroVideoLoaded] = useState(false);
 
   // High-fidelity timeline sequence states
   const [animationStage, setAnimationStage] = useState<'hidden' | 'introducing' | 'overshoot' | 'settling' | 'idle'>('hidden');
@@ -629,13 +630,33 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           }}
         />
 
+        {/* Low-quality volcanic placeholder image that cross-fades into the high performance video loop */}
+        <div 
+          className={`absolute inset-0 z-[2] transition-opacity duration-[1200ms] ease-out pointer-events-none ${
+            heroVideoLoaded ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          {/* Volcanic active lava LQIP (Low Quality Image Placeholder - loaded instantaneously at less than 5KB) */}
+          <img
+            src="https://images.unsplash.com/photo-1619266465172-02a857c3556d?auto=format&fit=crop&w=150&q=20&blur=8"
+            alt="Lava flow loader preview"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover filter brightness-[0.70] contrast-[1.1] blur-[8px]"
+          />
+          {/* Gentle secondary ambient volcanic gradient over the blurred placeholder to blend beautifully with Vizm1 black-orange core branding */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#100703]/80 via-[#0a0401]/60 to-black z-[3]" />
+        </div>
+
         <video
           ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-75 filter brightness-[0.95] contrast-[1.2] scale-102 z-[1] relative"
+          onLoadedData={() => setHeroVideoLoaded(true)}
+          className={`w-full h-full object-cover filter brightness-[0.95] contrast-[1.2] scale-102 z-[1] relative transition-opacity duration-1000 ease-out ${
+            heroVideoLoaded ? "opacity-75" : "opacity-0"
+          }`}
         >
           {/* Primary high-fidelity active loop from Google Labs Flow shared stream */}
           <source 

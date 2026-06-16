@@ -31,6 +31,8 @@ export default function Footer({ onNavigate, onOpenStylist }: FooterProps) {
             </span>
             <span className="text-white/20">|</span>
             <span>SPEC BUILD V3.9</span>
+            <span className="text-white/20">|</span>
+            <span className="text-white/50 tracking-[0.2em] font-medium">MADE BY VIZ</span>
           </div>
         </div>
 
