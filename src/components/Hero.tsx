@@ -533,7 +533,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
               className="relative w-full flex flex-col items-center"
             >
               {/* Image element with glowing rim lighting styled cleanly */}
-              <div className="relative flex justify-center items-center w-full z-10 p-4 lg:p-0 lg:pt-[13px] lg:ml-[100px] lg:mr-[90px] lg:mt-0 lg:mb-[80px] lg:w-[600px] lg:h-[425.9px]">
+              <div className="relative flex justify-center items-center w-full z-10 p-4 lg:p-0 lg:pt-[13px] lg:ml-[100px] lg:mr-[90px] lg:mt-0 lg:mb-[80px] lg:w-[800px] lg:h-[600px]">
                 {/* Embedded volumetric back ambient lava reflections */}
                 <div 
                   className="absolute inset-0 rounded-full bg-[#df7b34]/6 blur-3xl transition-opacity duration-1000 pointer-events-none" 
