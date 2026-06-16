@@ -15,32 +15,8 @@ export default function ProductShowcase({
   onAddToCart,
 }: ProductShowcaseProps) {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
-  const [scrollY, setScrollY] = useState(0);
-  const [sectionTop, setSectionTop] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const showcaseVideoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (sectionRef.current) {
-      setSectionTop(sectionRef.current.offsetTop);
-    }
-    const handleResize = () => {
-      if (sectionRef.current) {
-        setSectionTop(sectionRef.current.offsetTop);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     if (showcaseVideoRef.current) {
@@ -57,8 +33,6 @@ export default function ProductShowcase({
     activeCategory === "ALL"
       ? products
       : products.filter((p) => p.category === activeCategory);
-
-  const parallaxY = (scrollY - sectionTop) * 0.22;
 
   const atmosphereParticles = [
     { id: "p1", type: "ash", left: "15%", top: "15%", size: 4, duration: 18, delay: 0 },
@@ -90,7 +64,7 @@ export default function ProductShowcase({
         {/* Editorial Subtitle & Title */}
         <div id="showcase-header" className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-20">
           <div className="text-left">
-            <h2 className="font-heading text-6xl md:text-7xl xl:text-8xl tracking-tight leading-none text-white uppercase">
+            <h2 className="font-heading text-4xl sm:text-6xl md:text-7xl xl:text-8xl tracking-tight leading-none text-white uppercase">
               EXPLOSIVE SUMMER <br />
               <span className="text-white/20">VOLCANO ERUPTION</span>
             </h2>
@@ -164,6 +138,7 @@ export default function ProductShowcase({
                   <motion.img
                     src={p.imageUrl}
                     alt={p.name}
+                    loading="lazy"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       const match = p.id.match(/(\d+)/);

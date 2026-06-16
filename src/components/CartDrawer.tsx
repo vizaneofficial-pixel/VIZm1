@@ -66,7 +66,7 @@ export default function CartDrawer({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 150 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full md:w-[480px] bg-[#090909]/95 border-l border-white/[0.05] shadow-[0_0_80px_rgba(0,0,0,0.9)] p-8 flex flex-col justify-between overflow-y-auto"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full md:w-[480px] bg-[#090909]/95 border-l border-white/[0.05] shadow-[0_0_80px_rgba(0,0,0,0.9)] p-5 sm:p-8 flex flex-col justify-between overflow-y-auto"
           >
             {/* Drawer Top Header */}
             <div>

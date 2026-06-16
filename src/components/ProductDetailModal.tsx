@@ -46,7 +46,7 @@ export default function ProductDetailModal({
         initial={{ scale: 0.92, opacity: 0, y: 30 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.92, opacity: 0, y: 30 }}
-        className="bg-[#0b0b0b] border border-white/[0.05] rounded-[24px] w-full max-w-[950px] max-h-[92vh] md:max-h-[85vh] shadow-[0_30px_100px_rgba(0,0,0,0.95)] overflow-y-auto md:overflow-hidden relative z-10 flex flex-col"
+        className="bg-[#0b0b0b] border border-white/[0.05] rounded-[24px] w-full max-w-[820px] max-h-[88vh] md:max-h-[80vh] shadow-[0_30px_100px_rgba(0,0,0,0.95)] overflow-y-auto md:overflow-hidden relative z-10 flex flex-col"
       >
         {/* Dynamic scan line filter representing blueprint style */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-30" />
@@ -54,7 +54,7 @@ export default function ProductDetailModal({
         <div className="grid grid-cols-1 md:grid-cols-12 md:divide-x md:divide-white/[0.05] h-full flex-1 min-h-0">
           
           {/* Left Media rotating stage column - highly optimized for smaller compact viewport fits */}
-          <div id="modal-stage-col" className="md:col-span-5 p-6 flex flex-col justify-between items-center relative min-h-[320px] md:min-h-[420px] md:max-h-[85vh]">
+          <div id="modal-stage-col" className="md:col-span-5 p-5 md:p-6 flex flex-col justify-between items-center relative min-h-[260px] md:min-h-[340px] md:max-h-[80vh]">
             {/* Stage heading indicators */}
             <div className="w-full flex items-center justify-between z-10 select-none">
               <span className="text-[10px] font-mono text-[#777777] uppercase tracking-[0.2em]">
@@ -101,7 +101,7 @@ export default function ProductDetailModal({
                     e.currentTarget.src = fallbackVal;
                   }
                 }}
-                className="max-h-[220px] md:max-h-[280px] w-auto max-w-[85%] object-contain relative z-10 rounded-2xl brightness-[0.95] contrast-[1.05]"
+                className="max-h-[160px] md:max-h-[220px] w-auto max-w-[80%] object-contain relative z-10 rounded-2xl brightness-[0.95] contrast-[1.05]"
               />
               
               {/* Soft warm orange lighting reflection */}
@@ -116,7 +116,7 @@ export default function ProductDetailModal({
           </div>
 
           {/* Right Product configurations and specifications column - beautifully sized and custom scrollable if text extends */}
-          <div id="modal-specs-col" className="md:col-span-7 p-6 md:p-8 flex flex-col justify-between text-left relative bg-[#090909]/95 md:max-h-[85vh] overflow-y-auto custom-scrollbar">
+          <div id="modal-specs-col" className="md:col-span-7 p-5 md:p-6 flex flex-col justify-between text-left relative bg-[#090909]/95 md:max-h-[80vh] overflow-y-auto custom-scrollbar">
             {/* Close Button absolute positioning */}
             <button
               id="dismiss-detail-modal"

@@ -11,14 +11,23 @@ interface HeroProps {
   onAddToCart?: (product: Product, color: ColorVariant) => void;
 }
 
+// Global memory cache to prevent repeating background extraction on navigation/re-renders
+const processedCache = new Map<string, string>();
+
 // Custom React hook for high-performance automatic background removal (BFS flood fill)
 function useAutomaticBackgroundExtractedImage(rawUrl: string, enabled: boolean = true) {
-  const [processedUrl, setProcessedUrl] = useState<string>(rawUrl);
-  const [isProcessing, setIsProcessing] = useState(enabled);
+  const [processedUrl, setProcessedUrl] = useState<string>(() => processedCache.get(rawUrl) || rawUrl);
+  const [isProcessing, setIsProcessing] = useState(() => !processedCache.has(rawUrl) && enabled);
 
   useEffect(() => {
     if (!enabled) {
       setProcessedUrl(rawUrl);
+      return;
+    }
+
+    if (processedCache.has(rawUrl)) {
+      setProcessedUrl(processedCache.get(rawUrl)!);
+      setIsProcessing(false);
       return;
     }
 
@@ -41,8 +50,8 @@ function useAutomaticBackgroundExtractedImage(rawUrl: string, enabled: boolean =
           return;
         }
 
-        // Downscale slightly for performance while maintaining exceptional resolution
-        const maxDim = 800;
+        // Retain crisp display resolution with optimized background subtraction extraction
+        const maxDim = 1024;
         let w = img.naturalWidth || img.width;
         let h = img.naturalHeight || img.height;
         if (w > maxDim || h > maxDim) {
@@ -172,9 +181,10 @@ function useAutomaticBackgroundExtractedImage(rawUrl: string, enabled: boolean =
           }
         }
 
-        ctx.putImageData(imgData, 0, 0);
+        const resultUrl = canvas.toDataURL("image/png");
+        processedCache.set(rawUrl, resultUrl);
         if (isMounted) {
-          setProcessedUrl(canvas.toDataURL("image/png"));
+          setProcessedUrl(resultUrl);
           setIsProcessing(false);
         }
       } catch (err) {
@@ -232,11 +242,10 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
   const [selectedColor, setSelectedColor] = useState<"WHITE" | "SILVER" | "ORANGE" | "BLACK">("WHITE");
   const [activeSlide, setActiveSlide] = useState(0);
   const [addConfirmed, setAddConfirmed] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
   const [heroVideoLoaded, setHeroVideoLoaded] = useState(false);
 
   // High-fidelity timeline sequence states
-  const [animationStage, setAnimationStage] = useState<'hidden' | 'introducing' | 'overshoot' | 'settling' | 'idle'>('hidden');
+  const [animationStage, setAnimationStage] = useState<'hidden' | 'introducing' | 'overshoot' | 'settling' | 'idle'>('idle');
   const [mouseDistance, setMouseDistance] = useState<number>(9999);
   const [approachOffset, setApproachOffset] = useState({ x: 0, y: 0 });
   const [isDirectHover, setIsDirectHover] = useState(false);
@@ -265,65 +274,72 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
     { id: 8, x: 60, y: -70, size: 4, delay: 0.5, duration: 1.5, color: "#8c8275" },
   ];
 
+  // Compute fluid non-snapping mouse approach & magnetic vectors using high-performance rAF optimization
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    let rect: DOMRect | null = null;
+    let frameId: number | null = null;
 
-  // Set up precise multi-phase campaign load keyframes sequence
-  useEffect(() => {
-    const hiddenTimer = setTimeout(() => {
-      setAnimationStage('introducing');
-    }, 300);
-
-    const overshootTimer = setTimeout(() => {
-      setAnimationStage('overshoot');
-    }, 2100); // 300ms + 1800ms reveal
-
-    const settlingTimer = setTimeout(() => {
-      setAnimationStage('settling');
-    }, 2250); // 150ms hold
-
-    const idleTimer = setTimeout(() => {
-      setAnimationStage('idle');
-    }, 2400); // Transitions completely into luxury idle floating
-
-    return () => {
-      clearTimeout(hiddenTimer);
-      clearTimeout(overshootTimer);
-      clearTimeout(settlingTimer);
-      clearTimeout(idleTimer);
-    };
-  }, []);
-
-  // Compute fluid non-snapping mouse approach & magnetic vectors
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!productRef.current) return;
-      const rect = productRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      const dx = e.clientX - centerX;
-      const dy = e.clientY - centerY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      setMouseDistance(dist);
-      if (dist < 250) {
-        setApproachOffset({
-          x: dx / 250,
-          y: dy / 250
-        });
-      } else {
-        setApproachOffset({ x: 0, y: 0 });
+    const handleMouseEnter = () => {
+      if (productRef.current) {
+        rect = productRef.current.getBoundingClientRect();
       }
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    const handleResizeOrScroll = () => {
+      rect = null; // Stale cache bust
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!productRef.current) return;
+      if (!rect) {
+        rect = productRef.current.getBoundingClientRect();
+      }
+
+      const run = () => {
+        if (!rect) return;
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const dx = e.clientX - centerX;
+        const dy = e.clientY - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        setMouseDistance(dist);
+        if (dist < 250) {
+          setApproachOffset({
+            x: dx / 250,
+            y: dy / 250
+          });
+        } else {
+          setApproachOffset({ x: 0, y: 0 });
+        }
+        frameId = null;
+      };
+
+      if (frameId === null) {
+        frameId = requestAnimationFrame(run);
+      }
+    };
+
+    const container = productRef.current;
+    if (container) {
+      container.addEventListener("mouseenter", handleMouseEnter);
+    }
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("scroll", handleResizeOrScroll, { passive: true });
+    window.addEventListener("resize", handleResizeOrScroll, { passive: true });
+
+    return () => {
+      if (container) {
+        container.removeEventListener("mouseenter", handleMouseEnter);
+      }
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleResizeOrScroll);
+      window.removeEventListener("resize", handleResizeOrScroll);
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+    };
   }, []);
 
   // Programmatic playback helper to bypass aggressive client iframe autoplay policies
@@ -354,7 +370,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
   };
 
   // Parallax calculations targeting exactly 25% slower scroll depth offset
-  const translateY = scrollY * 0.25;
+  const translateY = 0;
 
   // Compute luxury active approach mathematical constants mapped onto the style layers
   const proximityStrength = Math.max(0, 1 - mouseDistance / 250);
@@ -385,53 +401,11 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
         style={{ y: translateY }}
         className="w-full flex flex-col items-center relative z-10"
       >
-        {/* Wrapper 2: Entrance and Settling Sequence Layer */}
+        {/* Wrapper 2: Instant Load & Idle Layer */}
         <motion.div
-          initial="hidden"
-          animate={
-            animationStage === 'hidden' 
-              ? "hidden" 
-              : animationStage === 'introducing' 
-              ? "entering" 
-              : animationStage === 'overshoot' 
-              ? "overshoot" 
-              : animationStage === 'settling' 
-              ? "settling" 
-              : "idle"
-          }
+          initial="idle"
+          animate="idle"
           variants={{
-            hidden: {
-              opacity: 0,
-              scale: 0.75,
-              y: 120,
-              x: 80,
-              rotateZ: -8,
-              rotateY: 18,
-              filter: "blur(18px)",
-            },
-            entering: {
-              opacity: 1,
-              scale: 1.02, // overshoot target
-              y: 0,
-              x: 0,
-              rotateZ: -5,
-              rotateY: 0,
-              filter: "blur(0px)",
-            },
-            overshoot: {
-              scale: 1.02,
-              y: 0,
-              x: 0,
-              rotateZ: -5,
-              rotateY: 0,
-            },
-            settling: {
-              scale: 1.00,
-              y: 0,
-              x: 0,
-              rotateZ: -5,
-              rotateY: 0,
-            },
             idle: {
               opacity: 1,
               scale: 1.00,
@@ -443,11 +417,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             }
           }}
           transition={{
-            hidden: { duration: 0 },
-            entering: { duration: 1.8, ease: [0.16, 1, 0.3, 1] },
-            overshoot: { duration: 0.15, ease: "easeOut" },
-            settling: { duration: 0.15, ease: "easeOut" },
-            idle: { duration: 0.3, ease: "easeInOut" }
+            duration: 0
           }}
           className="w-full flex flex-col items-center"
         >
@@ -460,18 +430,16 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             style={{
               transformStyle: "preserve-3d",
               transform: `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) rotateZ(-5deg) scale(${activeScale}) translateZ(${translateZ})`,
-              transition: animationStage === 'idle' 
-                ? "transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 900ms cubic-bezier(0.16, 1, 0.3, 1)" 
-                : "none",
+              transition: "transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 900ms cubic-bezier(0.16, 1, 0.3, 1)",
               willChange: "transform",
             }}
             onClick={handleProductClick}
           >
             {/* Background Volumetric Particle Depth-Planes (Ember / Ash behind item) */}
             <div 
-              className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-[2000ms] ease-out"
+              className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-[1000ms] ease-out"
               style={{
-                opacity: (animationStage === 'introducing' || animationStage === 'overshoot' || animationStage === 'settling') ? 1 : 0
+                opacity: 0.85
               }}
             >
               {backgroundParticles.map((p) => (
@@ -536,9 +504,9 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
               <div className="relative flex justify-center items-center w-full z-10 p-4 lg:p-0 lg:pt-[13px] lg:ml-[100px] lg:mr-[90px] lg:mt-0 lg:mb-[80px] lg:w-[800px] lg:h-[600px]">
                 {/* Embedded volumetric back ambient lava reflections */}
                 <div 
-                  className="absolute inset-0 rounded-full bg-[#df7b34]/6 blur-3xl transition-opacity duration-1000 pointer-events-none" 
+                  className="absolute inset-0 rounded-full bg-[#df7b34]/6 blur-3xl transition-all duration-1000 pointer-events-none" 
                   style={{
-                    opacity: isDirectHover ? 1.0 : (mouseDistance < 250 ? 0.6 + proximityStrength * 0.4 : 0.6),
+                    opacity: isDirectHover ? 1.0 : 0.6,
                   }}
                 />
                 
@@ -550,15 +518,34 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
                   }}
                 />
                 
-                <img
+                <motion.img
                   src={processedUrl}
                   alt={heroProduct.name}
                   referrerPolicy="no-referrer"
-                  className="w-full h-auto object-contain select-none pointer-events-none transition-all duration-500 max-h-[78vh]"
+                  className="w-full h-auto object-contain select-none pointer-events-none max-h-[78vh]"
+                  initial={{ 
+                    scale: 0.75, 
+                    rotate: -12, 
+                    y: 100, 
+                    opacity: 0, 
+                    filter: "blur(12px) drop-shadow(0 0px 0px rgba(0,0,0,0))"
+                  }}
+                  animate={{ 
+                    scale: 1, 
+                    rotate: 0, 
+                    y: 0, 
+                    opacity: 1, 
+                    filter: `blur(0px) drop-shadow(0 25px 50px rgba(0,0,0,${isDirectHover ? 0.95 : 0.85})) drop-shadow(0 0 ${isDirectHover ? 35 : 28}px rgba(223,123,52,${isDirectHover ? 0.8 : 0.45}))`
+                  }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 75,
+                    damping: 14,
+                    mass: 1.15,
+                    restDelta: 0.001
+                  }}
                   style={{
-                    filter: animationStage === 'hidden' 
-                      ? "none" 
-                      : `drop-shadow(0 25px 50px rgba(0,0,0,${isDirectHover ? 0.95 : 0.85 + proximityStrength * 0.1})) drop-shadow(0 0 ${isDirectHover ? 35 : 28}px rgba(223,123,52,${isDirectHover ? 0.8 : 0.45 + proximityStrength * 0.25}))`,
+                    transformOrigin: "center center",
                   }}
                 />
               </div>
@@ -566,9 +553,9 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
 
             {/* Foreground Volumetric Particle Depth-Planes (Ember / Ash in front of item) */}
             <div 
-              className="absolute inset-0 pointer-events-none z-[20] transition-opacity duration-[2000ms] ease-out"
+              className="absolute inset-0 pointer-events-none z-[20] transition-opacity duration-[1000ms] ease-out"
               style={{
-                opacity: (animationStage === 'introducing' || animationStage === 'overshoot' || animationStage === 'settling') ? 1 : 0
+                opacity: 0.85
               }}
             >
               {foregroundParticles.map((p) => (
@@ -615,9 +602,9 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
         Provides space for a background video loop. Dimmed and configured to play seamlessly.
       */}      <div className="absolute inset-0 z-0 overflow-hidden select-none bg-black">
         {/* Sleek volumetric black gradient layer to maintain high readability and smooth fading */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#000000] via-[#000000]/40 to-[#000000] z-10 pointer-events-none" />
-        {/* Modern blur + dark overlay layer directly above the background video but under text/content */}
-        <div className="absolute inset-0 backdrop-blur-[1px] bg-black/20 z-[5] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#000000] via-[#000000]/30 to-[#000000] z-10 pointer-events-none" />
+        {/* Modern dark overlay layer directly above the background video but under text/content */}
+        <div className="absolute inset-0 bg-black/10 z-[5] pointer-events-none" />
         
         {/* Pulsing Volcanic Glow Overlay syncing with campaign load sequence */}
         <div 
@@ -656,23 +643,23 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           playsInline
           preload="auto"
           onCanPlay={() => setHeroVideoLoaded(true)}
-          className={`w-full h-full object-cover filter brightness-[0.95] contrast-[1.2] scale-102 z-[1] relative transition-opacity duration-1000 ease-out ${
+          className={`w-full h-full object-cover filter brightness-[0.95] contrast-[1.25] scale-102 z-[1] relative transition-opacity duration-1000 ease-out ${
             heroVideoLoaded ? "opacity-75" : "opacity-0"
           }`}
         >
-          {/* High-fidelity slow atmospheric particle flow loop fallback (Highly optimized and preloaded) */}
-          <source 
-            src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718cf39cc03310fed93708e12cb1&profile_id=139&oauth2_token_id=57447761" 
-            type="video/mp4" 
-          />
-          {/* Primary high-fidelity active loop from Google Labs Flow shared stream */}
+          {/* Primary high-fidelity active loop from Google Labs Flow shared stream (UHD 4K AI-generated) */}
           <source 
             src="https://labs.google/fx/api/og-video/shared/bbf54c40-b51a-4823-99a6-e85d8445b74d" 
             type="video/mp4" 
           />
-          {/* Direct high-fidelity active volcano eruption loop backup fallback */}
+          {/* Direct high-fidelity active volcano eruption loop backup fallback (HD) */}
           <source 
             src="https://assets.mixkit.co/videos/preview/mixkit-lava-eruption-from-a-volcano-in-chile-43306-large.mp4" 
+            type="video/mp4" 
+          />
+          {/* High-fidelity slow atmospheric particle flow loop fallback */}
+          <source 
+            src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718cf39cc03310fed93708e12cb1&profile_id=139&oauth2_token_id=57447761" 
             type="video/mp4" 
           />
         </video>
@@ -721,23 +708,13 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
         <div id="hero-left-editorial" className="lg:col-span-5 flex flex-col items-start gap-6 select-none text-left pt-6 lg:pt-0">
           
           <div className="relative">
-            <h1 className="font-heading text-8xl md:text-9xl tracking-[0.02em] leading-[0.85] text-white uppercase font-black">
-              <motion.span 
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                className="block"
-              >
+            <h1 className="font-heading text-6xl sm:text-8xl md:text-9xl tracking-[0.02em] leading-[0.85] text-white uppercase font-black">
+              <span className="block">
                 COLLECTION
-              </motion.span>
-              <motion.span 
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="block text-white"
-              >
+              </span>
+              <span className="block text-white">
                 VOLCANO DROP<span className="text-xs font-sans align-top relative top-5 ml-1 select-none text-[#df7b34]">™</span>
-              </motion.span>
+              </span>
             </h1>
           </div>
 
@@ -751,10 +728,10 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             
             {/* Horizontal inline size list */}
             <div className="flex items-center">
-              <span className="font-mono text-[16px] text-[#777777] tracking-[0.25em] w-24 uppercase font-semibold pl-[-9px] ml-[7px] text-center leading-[23px]">
+              <span className="font-mono text-xs sm:text-[16px] text-[#777777] tracking-[0.25em] w-16 sm:w-24 uppercase font-semibold pl-[-9px] ml-[7px] text-center leading-[23px]">
                 SIZE
               </span>
-              <div className="flex items-center gap-7 ml-[40px] text-[23px]">
+              <div className="flex items-center gap-4 sm:gap-7 ml-6 sm:ml-[40px] text-[20px] sm:text-[23px]">
                 {(["S", "M", "L", "XL"] as const).map((size) => (
                   <button
                     id={`hero-size-btn-${size.toLowerCase()}`}
@@ -784,12 +761,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
             ================ BOTTOM LEFT ACQUIRE ACTION ================
             Circular thin-line wireframe layout with dynamic arrow and pricing tags.
           */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex items-center gap-10 mt-2"
-          >
+          <div className="flex items-center gap-10 mt-2">
             <button
                id="hero-add-to-cart-circular"
               onClick={handleAcquire}
@@ -820,7 +792,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
                 </span>
               </div>
             </button>
-          </motion.div>
+          </div>
 
         </div>
 

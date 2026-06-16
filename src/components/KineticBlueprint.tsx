@@ -106,7 +106,7 @@ export default function KineticBlueprint() {
                 <span className="font-mono text-[11px] text-[#df7b34] uppercase tracking-[0.3em] font-semibold mb-3 block">
                   BRAND SPECIFICATIONS
                 </span>
-                <h2 className="font-heading text-6xl md:text-7xl font-light tracking-tight text-white leading-none">
+                <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl font-light tracking-tight text-white leading-none">
                   Over <span className="font-medium text-[#df7b34]">12</span>
                   <br />
                   <span className="text-white">years</span>
@@ -141,7 +141,7 @@ export default function KineticBlueprint() {
             {/* Ambient orange aura behind the cluster */}
             <div className="absolute w-[220px] h-[220px] bg-[#df7b34]/8 rounded-full filter blur-[70px] pointer-events-none" />
 
-            <div className="grid grid-cols-2 gap-8 md:gap-12 relative z-10">
+            <div className="grid grid-cols-2 gap-4 sm:gap-8 md:gap-12 relative z-10">
               {partners.map((p) => (
                 <motion.a
                   key={p.id}

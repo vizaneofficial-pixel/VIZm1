@@ -80,7 +80,7 @@ export default function AIStylist({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0.8 }}
             transition={{ type: "spring", damping: 25, stiffness: 150 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full md:w-[600px] bg-[#090909]/95 border-l border-white/[0.05] shadow-[0_0_100px_rgba(0,0,0,0.9)] p-8 overflow-y-auto flex flex-col justify-between"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full md:w-[600px] bg-[#090909]/95 border-l border-white/[0.05] shadow-[0_0_100px_rgba(0,0,0,0.9)] p-5 sm:p-8 overflow-y-auto flex flex-col justify-between"
           >
             {/* Drawer Top Header */}
             <div>

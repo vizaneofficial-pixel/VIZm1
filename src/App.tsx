@@ -206,27 +206,33 @@ export default function App() {
       });
   }, []);
 
-  // Sync scroll positioning to coordinate Navigation Highlights
+  // Sync scroll positioning to coordinate Navigation Highlights with native IntersectionObserver
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = ["hero", "showcase", "blueprint"];
-      const scrollPos = window.scrollY + window.innerHeight / 3;
-
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(sectionId);
-            break;
-          }
-        }
-      }
+    const sections = ["hero", "showcase", "blueprint"];
+    const observerOptions = {
+      root: null,
+      rootMargin: "-45% 0px -45% 0px", // Trigger when the section occupies the center of the screen
+      threshold: 0,
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   // Utility triggers to direct navigation
@@ -317,12 +323,12 @@ export default function App() {
             backgroundVideoLoaded ? "opacity-[0.60]" : "opacity-0"
           }`}
         >
+          <source src="https://labs.google/fx/api/og-video/shared/85258e17-122d-42aa-a45b-a3c7c9710abe" type="video/mp4" />
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-lava-eruption-from-a-volcano-in-chile-43306-large.mp4" type="video/mp4" />
           <source 
             src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718cf39cc03310fed93708e12cb1&profile_id=139&oauth2_token_id=57447761" 
             type="video/mp4" 
           />
-          <source src="https://labs.google/fx/api/og-video/shared/85258e17-122d-42aa-a45b-a3c7c9710abe" type="video/mp4" />
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-lava-eruption-from-a-volcano-in-chile-43306-large.mp4" type="video/mp4" />
         </video>
 
         {/* Layer 2: Semi-transparent premium cinematic gradient overlay */}
