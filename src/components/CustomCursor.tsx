@@ -22,8 +22,8 @@ export default function CustomCursor() {
     document.body.style.cursor = "none";
 
     const moveCursor = (e: MouseEvent) => {
-      mouseX.set(e.clientX - 10);
-      mouseY.set(e.clientY - 10);
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -70,13 +70,15 @@ export default function CustomCursor() {
           x: cursorX,
           y: cursorY,
           pointerEvents: "none",
+          translateX: "-50%",
+          translateY: "-50%",
         }}
         animate={{
-          scale: cursorType === "hover" ? 0.3 : cursorType === "image" ? 2.5 : 1,
+          scale: cursorType === "hover" ? 0.4 : cursorType === "image" ? 2.5 : 1,
           backgroundColor: cursorType === "hover" ? "#ffffff" : "#df7b34",
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="fixed top-0 left-0 w-5 h-5 rounded-full z-[99999] mix-blend-difference"
+        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+        className="fixed top-0 left-0 w-4 h-4 rounded-full z-[99999] mix-blend-difference will-change-transform"
       />
 
       {/* Outer ambient energy tracking circle */}
@@ -85,18 +87,16 @@ export default function CustomCursor() {
           x: cursorX,
           y: cursorY,
           pointerEvents: "none",
+          translateX: "-50%",
+          translateY: "-50%",
         }}
         animate={{
-          width: cursorType === "hover" ? 44 : cursorType === "image" ? 64 : 28,
-          height: cursorType === "hover" ? 44 : cursorType === "image" ? 64 : 28,
+          scale: cursorType === "hover" ? 1.6 : cursorType === "image" ? 2.4 : 1,
           borderColor: cursorType === "hover" ? "#ffffff" : "#df7b34",
-          borderWidth: cursorType === "hover" ? "1.5px" : "1px",
-          top: cursorType === "hover" ? -12 : cursorType === "image" ? -22 : -4,
-          left: cursorType === "hover" ? -12 : cursorType === "image" ? -22 : -4,
-          opacity: cursorType === "image" ? 0.45 : 0.8,
+          opacity: cursorType === "image" ? 0.4 : 0.8,
         }}
         transition={{ type: "spring", stiffness: 220, damping: 25 }}
-        className="fixed rounded-full border border-[#df7b34] z-[99998] shadow-[0_0_12px_rgba(223,123,52,0.3)] pointer-events-none"
+        className="fixed top-0 left-0 w-8 h-8 rounded-full border border-[#df7b34] z-[99998] shadow-[0_0_12px_rgba(223,123,52,0.3)] pointer-events-none will-change-transform"
       />
     </>
   );

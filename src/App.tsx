@@ -12,6 +12,7 @@ import CartDrawer from "./components/CartDrawer";
 import CustomCursor from "./components/CustomCursor";
 import Footer from "./components/Footer";
 import AshChatbot from "./components/AshChatbot";
+import SoundControl from "./components/SoundControl";
 
 // Complete Local Fallback Catalog matching description to avoid any empty frames
 const FALLBACK_PRODUCTS: Product[] = [
@@ -188,6 +189,21 @@ export default function App() {
   const [stylistOpen, setStylistOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const [backgroundVideoLoaded, setBackgroundVideoLoaded] = useState(false);
+  const [explosionFlash, setExplosionFlash] = useState(false);
+  const [screenShake, setScreenShake] = useState(false);
+
+  const handleExplosionEffects = () => {
+    setExplosionFlash(true);
+    setScreenShake(true);
+    // Flash fades out quickly for high performance
+    setTimeout(() => {
+      setExplosionFlash(false);
+    }, 800);
+    // Camera shake continues vibrating slightly longer
+    setTimeout(() => {
+      setScreenShake(false);
+    }, 1200);
+  };
 
   // Fetch true catalog directly from Express and load
   useEffect(() => {
@@ -287,7 +303,25 @@ export default function App() {
   };
 
   return (
-    <div id="applet-viewport" className="relative min-h-screen bg-black overflow-hidden selection:bg-[#df7b34] selection:text-white">
+    <div 
+      id="applet-viewport" 
+      className={`relative min-h-screen bg-black overflow-hidden selection:bg-[#df7b34] selection:text-white transition-all duration-300 ${
+        screenShake ? "volcano-shaking-viewport" : ""
+      }`}
+    >
+      {/* Cinematic Caldera Explosion Flash Overlay */}
+      <AnimatePresence>
+        {explosionFlash && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.65 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed inset-0 bg-gradient-to-tr from-[#df7b34]/35 via-red-950/40 to-transparent z-[35] pointer-events-none mix-blend-color-dodge will-change-transform"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Absolute Film Grain Background texture overlay */}
       <div className="concrete-noise" />
 
@@ -458,6 +492,9 @@ export default function App() {
 
       {/* Ash AI Floating Chatbot */}
       <AshChatbot cart={cart} />
+
+      {/* Premium Volcanic Ambience BGM & Seismic Trigger Panel */}
+      <SoundControl onExplosionTriggered={handleExplosionEffects} />
 
       {/* Sleek industrial float watermark signature matching volcanic aesthetics */}
       <div className="fixed bottom-10 right-24 z-30 pointer-events-none select-none hidden sm:flex items-center gap-2">
