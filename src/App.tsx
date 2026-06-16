@@ -288,20 +288,21 @@ export default function App() {
       {/* ================ SHARED FIXED VOLCANIC LANDSCAPE CINEMATIC BACKGROUND ================ */}
       <div className="fixed inset-0 overflow-hidden z-0 pointer-events-none select-none bg-black">
         
-        {/* Ambient Pulsing Volcano placeholder - fast loading on initial mount using low-quality image placeholder */}
+        {/* Ambient Pulsing Volcano placeholder - fast loading on initial mount using premium compressed high-res image */}
         <div 
           className={`absolute inset-0 z-[1] transition-opacity duration-1000 ease-out pointer-events-none bg-black ${
             backgroundVideoLoaded ? "opacity-0" : "opacity-100"
           }`}
         >
-          {/* Extremely fast-loading, low resolution volcanic image (<5KB) */}
+          {/* Extremely fast-loading, highly-compressed premium volcanic image (sub-80KB) */}
           <img
-            src="https://images.unsplash.com/photo-1619266465172-02a857c3556d?auto=format&fit=crop&w=150&q=20&blur=8"
+            src="https://images.unsplash.com/photo-1619266465172-02a857c3556d?auto=format&fit=crop&w=1920&q=45"
             alt="Lava background placeholder"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.1] blur-[10px]"
+            className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.15] blur-[3px]"
           />
           <div className="absolute inset-0 bg-gradient-to-tr from-[#1b0a02]/90 via-[#050505]/80 to-black z-[2]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(223,123,52,0.12)_0%,transparent_60%)] animate-pulse z-[3] mix-blend-screen" />
         </div>
 
         {/* Layer 1: Blurred Animated Background Video */}
@@ -310,11 +311,16 @@ export default function App() {
           loop
           muted
           playsInline
-          onLoadedData={() => setBackgroundVideoLoaded(true)}
+          preload="auto"
+          onCanPlay={() => setBackgroundVideoLoaded(true)}
           className={`w-full h-full object-cover scale-108 filter blur-[4px] brightness-[0.80] contrast-[0.90] saturate-[0.80] select-none pointer-events-none transition-opacity duration-1000 ease-out ${
             backgroundVideoLoaded ? "opacity-[0.60]" : "opacity-0"
           }`}
         >
+          <source 
+            src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718cf39cc03310fed93708e12cb1&profile_id=139&oauth2_token_id=57447761" 
+            type="video/mp4" 
+          />
           <source src="https://labs.google/fx/api/og-video/shared/85258e17-122d-42aa-a45b-a3c7c9710abe" type="video/mp4" />
           <source src="https://assets.mixkit.co/videos/preview/mixkit-lava-eruption-from-a-volcano-in-chile-43306-large.mp4" type="video/mp4" />
         </video>

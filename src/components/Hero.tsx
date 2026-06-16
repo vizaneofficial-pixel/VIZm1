@@ -630,21 +630,22 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           }}
         />
 
-        {/* Low-quality volcanic placeholder image that cross-fades into the high performance video loop */}
+        {/* High-quality compressed volcanic placeholder image that cross-fades into the high performance video loop */}
         <div 
-          className={`absolute inset-0 z-[2] transition-opacity duration-[1200ms] ease-out pointer-events-none ${
+          className={`absolute inset-0 z-[2] transition-opacity duration-[1500ms] ease-out pointer-events-none ${
             heroVideoLoaded ? "opacity-0" : "opacity-100"
           }`}
         >
-          {/* Volcanic active lava LQIP (Low Quality Image Placeholder - loaded instantaneously at less than 5KB) */}
+          {/* High-resolution highly-compressed Unsplash volcanic image (Loaded instantly at sub-80KB) */}
           <img
-            src="https://images.unsplash.com/photo-1619266465172-02a857c3556d?auto=format&fit=crop&w=150&q=20&blur=8"
+            src="https://images.unsplash.com/photo-1619266465172-02a857c3556d?auto=format&fit=crop&w=1920&q=45"
             alt="Lava flow loader preview"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover filter brightness-[0.70] contrast-[1.1] blur-[8px]"
+            className="w-full h-full object-cover filter brightness-[0.70] contrast-[1.15] blur-[2px]"
           />
-          {/* Gentle secondary ambient volcanic gradient over the blurred placeholder to blend beautifully with Vizm1 black-orange core branding */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#100703]/80 via-[#0a0401]/60 to-black z-[3]" />
+          {/* Dense, technical ambient black-orange linear and radial gradients matching Vizm1 basalt signature */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#100703]/85 via-black/40 to-black z-[3]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(223,123,52,0.1)_0%,transparent_70%)] animate-pulse z-[4] mix-blend-screen" />
         </div>
 
         <video
@@ -653,11 +654,17 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           loop
           muted
           playsInline
-          onLoadedData={() => setHeroVideoLoaded(true)}
+          preload="auto"
+          onCanPlay={() => setHeroVideoLoaded(true)}
           className={`w-full h-full object-cover filter brightness-[0.95] contrast-[1.2] scale-102 z-[1] relative transition-opacity duration-1000 ease-out ${
             heroVideoLoaded ? "opacity-75" : "opacity-0"
           }`}
         >
+          {/* High-fidelity slow atmospheric particle flow loop fallback (Highly optimized and preloaded) */}
+          <source 
+            src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718cf39cc03310fed93708e12cb1&profile_id=139&oauth2_token_id=57447761" 
+            type="video/mp4" 
+          />
           {/* Primary high-fidelity active loop from Google Labs Flow shared stream */}
           <source 
             src="https://labs.google/fx/api/og-video/shared/bbf54c40-b51a-4823-99a6-e85d8445b74d" 
@@ -666,11 +673,6 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           {/* Direct high-fidelity active volcano eruption loop backup fallback */}
           <source 
             src="https://assets.mixkit.co/videos/preview/mixkit-lava-eruption-from-a-volcano-in-chile-43306-large.mp4" 
-            type="video/mp4" 
-          />
-          {/* High-fidelity slow atmospheric particle flow loop fallback */}
-          <source 
-            src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718cf39cc03310fed93708e12cb1&profile_id=139&oauth2_token_id=57447761" 
             type="video/mp4" 
           />
         </video>
