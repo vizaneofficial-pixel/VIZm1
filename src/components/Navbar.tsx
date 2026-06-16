@@ -158,7 +158,7 @@ export default function Navbar({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden mt-4 pt-4 border-t border-white/[0.05]"
+            className="md:hidden overflow-hidden mt-4 pt-5 pb-5 px-6 bg-[#090909]/98 border border-white/[0.08] backdrop-blur-3xl rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.95)]"
           >
             <div id="mobile-links" className="flex flex-col gap-4 pb-2">
               {navLinks.map((link) => (

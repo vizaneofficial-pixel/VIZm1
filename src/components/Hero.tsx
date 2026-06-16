@@ -444,16 +444,16 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           variants={{
             hidden: {
               opacity: 0,
-              scale: 0.75,
-              y: 120,
-              x: 80,
-              rotateZ: -8,
-              rotateY: 18,
-              filter: "blur(18px)",
+              scale: 1.00,
+              y: 0,
+              x: 0,
+              rotateZ: -5,
+              rotateY: 0,
+              filter: "blur(0px)",
             },
             entering: {
               opacity: 1,
-              scale: 1.02, // overshoot target
+              scale: 1.00,
               y: 0,
               x: 0,
               rotateZ: -5,
@@ -461,7 +461,7 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
               filter: "blur(0px)",
             },
             overshoot: {
-              scale: 1.02,
+              scale: 1.00,
               y: 0,
               x: 0,
               rotateZ: -5,
@@ -486,9 +486,9 @@ export default function Hero({ products, onSelectProduct, onOpenStylist, onAddTo
           }}
           transition={{
             hidden: { duration: 0 },
-            entering: { duration: 1.8, ease: [0.16, 1, 0.3, 1] },
-            overshoot: { duration: 0.15, ease: "easeOut" },
-            settling: { duration: 0.15, ease: "easeOut" },
+            entering: { duration: 1.2, ease: "easeOut" },
+            overshoot: { duration: 0.1, ease: "easeOut" },
+            settling: { duration: 0.1, ease: "easeOut" },
             idle: { duration: 0.3, ease: "easeInOut" }
           }}
           className="w-full flex flex-col items-center"
